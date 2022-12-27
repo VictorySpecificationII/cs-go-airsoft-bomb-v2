@@ -13,11 +13,11 @@ int currentLength = 0; //defines which number we are currently writing
 int i = 0; 
 char entered[4];
 
-int Scount = 20; // count seconds
+int Scount = 40; // count seconds
 int Mcount = 0; // count minutes
 int Hcount = 0; // count hours
 int DefuseTimer = 0; // set timer to 0
-int Mpenalty = 5; //59 for 1 attempt boom, less for more
+int Mpenalty = 10; //59 for 1 attempt boom, less for more
 
 long secMillis = 0; // store last time for second add
 long interval = 1000; // interval for seconds
@@ -96,6 +96,7 @@ void loop()
     case 1: //disarmed
       Serial.println("State: 1");
       lcd.clear();
+      trigger_buzzer(200);
       print_text_on_screen("Status", 5, 0);
       print_text_on_screen("DISARMED", 4, 1);
       while(state == 1){
@@ -119,6 +120,11 @@ void loop()
       print_text_on_screen("ARMING...", 3, 1);
       delay(125);
       lcd.clear();
+      trigger_buzzer(100);
+      delay(100);
+      trigger_buzzer(100);
+      delay(100);
+      trigger_buzzer(100);
       print_text_on_screen("Status", 5, 0);
       print_text_on_screen("ARMED", 5, 1);
       delay(2000);
