@@ -13,7 +13,7 @@ int currentLength = 0; //defines which number we are currently writing
 int i = 0; 
 char entered[4];
 
-int Scount = 5; // count seconds
+int Scount = 20; // count seconds
 int Mcount = 0; // count minutes
 int Hcount = 0; // count hours
 int DefuseTimer = 0; // set timer to 0
@@ -467,7 +467,6 @@ void defuse(){
         lcd.print(key2);
         entered[currentLength] = key2;
         currentLength++;
-        trigger_buzzer(200);
         delay(100);
         lcd.noCursor();
         lcd.setCursor(currentLength + 6, 0);
@@ -495,7 +494,8 @@ void defuse(){
       delay(2500);
       lcd.setCursor(0,1);
       lcd.print("");
-      delay(1000000);
+      delay(10000);
+      state = 0;
     
     }//end if
     
