@@ -454,7 +454,7 @@ void defuse(){
     lcd.print("Code: ");
         
     while (currentLength < 4){
-
+        
       timer();
       char key2 = customKeypad.getKey();
 
@@ -514,7 +514,7 @@ void defuse(){
       lcd.print("=====WARNING=====");
       lcd.setCursor (0,1);
       lcd.print("-Wrong Password-");
-      delay(3000);
+      delay(1500);
       lcd.clear();
       
       if (Hcount > 0){
