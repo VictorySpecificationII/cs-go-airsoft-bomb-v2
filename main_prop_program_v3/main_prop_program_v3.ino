@@ -180,8 +180,6 @@ void loop()
         timer();
         defuse();
       }    	
-      state = 4;
-    	state = 5;
     	break;
 
     case 4: //exploded, round end
@@ -411,7 +409,7 @@ int timer(){
 
 int defuse(){
 
-  //timer();
+  timer();
   char currentKey = customKeypad.getKey(); // get the key
     
   if (currentKey == '*'){
