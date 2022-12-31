@@ -13,14 +13,11 @@ int currentLength = 0; //defines which number we are currently writing
 int i = 0; 
 char entered[4];
 
-int Scount = 40; // count seconds
-int Mcount = 0; // count minutes
-int Hcount = 0; // count hours
-int DefuseTimer = 0; // set timer to 0
-int Mpenalty = 10; //59 for 1 attempt boom, less for more
+long hour = 23;
+long minute = 59;
+long second = 59;
 
-long secMillis = 0; // store last time for second add
-long interval = 1000; // interval for seconds
+long countdown_time = (hour*3600) + (minute * 60) + second;
 
 //............................GAME SECTION......................................
 
@@ -97,8 +94,13 @@ void loop()
       Serial.println("State: 1");
       lcd.clear();
       trigger_buzzer(200);
-      print_text_on_screen("Status", 5, 0);
-      print_text_on_screen("DISARMED", 4, 1);
+
+      lcd.setCursor(5,0);
+      lcd.print("Status");
+
+      lcd.setCursor(4,1);
+      lcd.print("DISARMED");  
+      
       while(state == 1){
         delay(1000); //ghetto debouncing fk yeah
         if (digitalRead(togglePin) == HIGH){
@@ -109,26 +111,8 @@ void loop()
 
     case 2: //armed
       Serial.println("State: 2");
-      lcd.clear();
-      print_text_on_screen("Status", 5, 0);
-      print_text_on_screen("ARMING", 3, 1);
-      delay(125);
-      print_text_on_screen("ARMING.", 3, 1);
-      delay(125);
-      print_text_on_screen("ARMING..", 3, 1);
-      delay(125);
-      print_text_on_screen("ARMING...", 3, 1);
-      delay(125);
-      lcd.clear();
-      trigger_buzzer(100);
-      delay(100);
-      trigger_buzzer(100);
-      delay(100);
-      trigger_buzzer(100);
-      print_text_on_screen("Status", 5, 0);
-      print_text_on_screen("ARMED", 5, 1);
-      delay(2000);
-      lcd.clear();
+
+      print_arming_msg();
 
       while(state == 2){
         if(digitalRead(togglePin) == LOW){
@@ -199,11 +183,13 @@ void loop()
 
     case 4: //exploded, round end
     	Serial.println("State: 4");
+      print_explosion_msg();
       state = 0;
     	break;
 
     case 5: //defused, round end
     	Serial.println("State: 5");
+      print_defuse_msg();
       state = 0;
     	break;
 
@@ -250,204 +236,144 @@ void misc_setup(){
   digitalWrite(ledPin, ledState);
 }
 
+void print_arming_msg(){
+
+  lcd.clear();
+
+  lcd.setCursor(5,0);
+  lcd.print("Status");
+
+  lcd.setCursor(3,1);
+  lcd.print("ARMING");
+  delay(125);
+
+
+  lcd.setCursor(5,0);
+  lcd.print("Status");
+
+  lcd.setCursor(3,1);
+  lcd.print("ARMING.");
+  delay(125);
+
+
+  lcd.setCursor(5,0);
+  lcd.print("Status");
+
+  lcd.setCursor(3,1);
+  lcd.print("ARMING..");
+  delay(125);
+
+
+  lcd.setCursor(5,0);
+  lcd.print("Status");
+
+  lcd.setCursor(3,1);
+  lcd.print("ARMING...");
+  delay(125);
+
+  lcd.clear();
+  trigger_buzzer(100);
+  delay(100);
+  trigger_buzzer(100);
+  delay(100);
+  trigger_buzzer(100);
+
+  lcd.setCursor(5,0);
+  lcd.print("Status");
+  lcd.setCursor(5,1);
+  lcd.print("ARMED");
+  delay(125);
+
+  delay(2000);
+  lcd.clear();
+}
+
+void print_defuse_msg(){
+
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Bomb defused.");
+
+  delay(3000);
+
+  lcd.clear();
+  trigger_buzzer(100);
+  delay(100);
+  trigger_buzzer(100);
+  delay(100);
+  trigger_buzzer(100);
+
+  lcd.setCursor(5,0);
+  lcd.print("CT's");
+  lcd.setCursor(5,1);
+  lcd.print("Win.");
+  delay(125);
+}
+
+void print_explosion_msg(){
+
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Goodbye.");
+
+  delay(3000);
+
+  lcd.clear();
+  trigger_buzzer(100);
+  delay(100);
+  trigger_buzzer(100);
+  delay(100);
+  trigger_buzzer(100);
+
+  lcd.setCursor(5,0);
+  lcd.print("T's");
+  lcd.setCursor(5,1);
+  lcd.print("Win.");
+  delay(125);
+}
 //...................SETUP FUNCTIONS..................
 
-//...................TEXT INPUT AND PRINT FUNCTIONS..................
-char return_key_press(){
-    char customKey = customKeypad.getKey();
-  if (customKey){
-    Serial.println(customKey);
-    return customKey;
-    }
-}
 
-void print_char_on_screen(char input, int horizontal, int vertical){
-  lcd.setCursor(horizontal,vertical);
-  lcd.print(input);
-}
-
-void print_text_on_screen(String input, int horizontal, int vertical){
-  lcd.setCursor(horizontal,vertical);
-  lcd.print(input);  
-}
-
-//...................TEXT INPUT AND PRINT FUNCTIONS..................
-
-//...................BUTTON FUNCTIONS..................
-int red_button_press(){
-  int reading = digitalRead(buttonPin);
-  if (reading != lastButtonState) {
-    // reset the debouncing timer
-    lastDebounceTime = millis();
-  }
-
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-
-    if (reading != buttonState) {
-      buttonState = reading;
-
-      if (buttonState == HIGH) {
-        ledState = !ledState;
-        if(ledState == LOW)
-        Serial.println("LED Off");
-        if(ledState == HIGH)
-        Serial.println("LED On");
-      }
-    }
-  }
-
-  digitalWrite(ledPin, ledState);
-  lastButtonState = reading;
-  return 1;
-}
-
-int red_button_defuse(){
-	int reading = digitalRead(buttonPin);
-	while( reading == 1 ) //while the button is pressed
-	{
-		//blink
-    Serial.println("Defuse Button Pressed");
-		digitalWrite(ledPin,HIGH);
-		delay(500);
-		digitalWrite(ledPin,LOW);
-		delay(500);
-		reading = digitalRead(buttonPin); //refresh value of variable
-	}
-}
-//...................BUTTON FUNCTIONS..................
 
 
 
 
 //..................TIMING FUNCTIONS...................
-void timer(){
+int timer(){
 
-  Serial.print(Scount);
-  Serial.println();
-    
-    if (Hcount <= 0){
-      
-      if ( Mcount < 0 ){
-      
-        lcd.noCursor();
-        lcd.clear();
-        lcd.home();
-        lcd.print("Goodbye.");
-        lcd.setCursor (0,1);
-        lcd.print("--------");
-
-        delay(1000);
-
-        lcd.clear();
-        lcd.home();
-        lcd.print("The bomb");
-        lcd.setCursor (0,1);
-        lcd.print("has exploded.");
-    
-        while (Mcount < 0){
-
-
-          trigger_buzzer(90);
-          delay(100); 
-          trigger_buzzer(90);
-          delay(100); 
-          trigger_buzzer(90);
-          delay(100); 
-          trigger_buzzer(90);
-          delay(100); 
-          trigger_buzzer(90);
-          delay(100); 
-          trigger_buzzer(90);
-          delay(100);
-
-        }//end while
-
-      }//end if
-
-    }//end if
-
-    lcd.setCursor (0,1); // sets cursor to 2nd line
-    lcd.print ("Timer:");
-
-    if (Hcount >= 10){
-        lcd.setCursor (7,1);
-        lcd.print (Hcount);
-    }//end if
-    
-    if (Hcount < 10){
-        lcd.setCursor (7,1);
-        lcd.print ("0");
-        lcd.setCursor (8,1);
-        lcd.print (Hcount);
-    }//end if
-
-    lcd.print (":");
-
-    if (Mcount >= 10){
-        lcd.setCursor (10,1);
-        lcd.print (Mcount);
-    }//end if
-    
-    if (Mcount < 10){
-        lcd.setCursor (10,1);
-        lcd.print ("0");
-        lcd.setCursor (11,1);
-        lcd.print (Mcount);
-    }//end if
-      
-    lcd.print (":");
-
-    if (Scount >= 10){
-        lcd.setCursor (13,1);
-        lcd.print (Scount);
-    }//end if
-
-    if (Scount < 10){
-        lcd.setCursor (13,1);
-        lcd.print ("0");
-        lcd.setCursor (14,1);
-        lcd.print (Scount);
-    }//end if
-
-    if (Hcount <0){
-        Hcount = 0; 
-    }//end if
-
-    if (Mcount <0){
-        Hcount --; 
-        Mcount = 59; 
-    }//end if
-
-    if (Scount <1){ // if 60 do this operation
-        Mcount --; // add 1 to Mcount
-        Scount = 59; // reset Scount
-    }//end if
-
-    if (Scount > 0){ // do this oper. 59 times
-      unsigned long currentMillis = millis();
-    
-      if(currentMillis - secMillis > interval){
-        trigger_buzzer(200);
-        trigger_buzzer(300);
-            
-        secMillis = currentMillis;
-        Scount --; // add 1 to Scount
-        delay(10); // waits for a second
-        delay(10); // waits for a second
-        //lcd.clear();
-
-    }//end if
-
-  }//end if
+  long countdowntime_seconds = countdown_time - (millis() / 1000);
+  if (countdowntime_seconds >= 0) {
+    long countdown_hour = countdowntime_seconds / 3600;
+    long countdown_minute = ((countdowntime_seconds / 60)%60);
+    long countdown_sec = countdowntime_seconds % 60;
+    lcd.setCursor(4, 1);
+    if (countdown_hour < 10) {
+      lcd.print("0");
+    }
+    lcd.print(countdown_hour);
+    lcd.print(":");
+    if (countdown_minute < 10) {
+      lcd.print("0");
+    }
+    lcd.print(countdown_minute);
+    lcd.print(":");
+    if (countdown_sec < 10) {
+      lcd.print("0");
+    }
+    lcd.print(countdown_sec);
+  }
+  delay(500);
 
 }//end timer
 
-void defuse(){
+int defuse(){
 
-  timer();
-  char key2 = customKeypad.getKey(); // get the key
+  //timer();
+  char currentKey = customKeypad.getKey(); // get the key
     
-  if (key2 == '*'){
+  if (currentKey == '*'){
 
     lcd.clear();
     lcd.setCursor(0,0);
@@ -456,22 +382,22 @@ void defuse(){
     while (currentLength < 4){
         
       timer();
-      char key2 = customKeypad.getKey();
+      char currentKey = customKeypad.getKey();
 
-      if (key2 == '#'){
+      if (currentKey == '#'){
         currentLength = 0;
         lcd.clear();
         lcd.setCursor(0,0);
         lcd.print("Code: ");
       }//end if
           
-      else if (key2 != NO_KEY){
+      else if (currentKey != NO_KEY){
                 
         lcd.setCursor(currentLength + 7, 0);
         lcd.cursor();
               
-        lcd.print(key2);
-        entered[currentLength] = key2;
+        lcd.print(currentKey);
+        entered[currentLength] = currentKey;
         currentLength++;
         delay(100);
         lcd.noCursor();
@@ -517,19 +443,6 @@ void defuse(){
       delay(1500);
       lcd.clear();
       
-      if (Hcount > 0){
-        Hcount = Hcount - 1;
-      }
-    
-      if (Mcount > 0){
-        Mcount = Mcount - Mpenalty;
-      }
-      
-      if (Scount > 0){
-        Scount = Scount - Mpenalty;
-      }
-
-      delay(1500);
       currentLength = 0;
       
       }//end else
