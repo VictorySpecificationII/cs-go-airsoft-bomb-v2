@@ -13,11 +13,9 @@ int currentLength = 0; //defines which number we are currently writing
 int i = 0; 
 char entered[4];
 
-long hour = 23;
-long minute = 59;
-long second = 59;
-
-long countdown_time = (hour*3600) + (minute * 60) + second;
+String action;
+long timein[6], countdown_time = 0, initialsecond = 0;
+int j = 0;
 
 //............................GAME SECTION......................................
 
@@ -163,6 +161,11 @@ void loop()
           delay(3000);
           lcd.clear();
           currentLength = 0;
+
+          lcd.setCursor(4, 0);
+          lcd.print("HH:MM:SS");
+          lcd.setCursor(4, 1);
+          lcd.print("00:00:00");
          
           state = 3;
           break;
@@ -308,7 +311,7 @@ void print_defuse_msg(){
   lcd.print("CT's");
   lcd.setCursor(5,1);
   lcd.print("Win.");
-  delay(125);
+  delay(30000);
 }
 
 void print_explosion_msg(){
@@ -331,7 +334,7 @@ void print_explosion_msg(){
   lcd.print("T's");
   lcd.setCursor(5,1);
   lcd.print("Win.");
-  delay(125);
+  delay(30000);
 }
 //...................SETUP FUNCTIONS..................
 
@@ -343,28 +346,66 @@ void print_explosion_msg(){
 //..................TIMING FUNCTIONS...................
 int timer(){
 
-  long countdowntime_seconds = countdown_time - (millis() / 1000);
-  if (countdowntime_seconds >= 0) {
-    long countdown_hour = countdowntime_seconds / 3600;
-    long countdown_minute = ((countdowntime_seconds / 60)%60);
-    long countdown_sec = countdowntime_seconds % 60;
-    lcd.setCursor(4, 1);
-    if (countdown_hour < 10) {
-      lcd.print("0");
+  char key = customKeypad.getKey();
+  if (key) {
+    switch (key) {
+      //If key is C set time.
+      case 'C'  :
+        action = "set_time";
+        lcd.setCursor(4, 1);
+        lcd.blink();
+        j = 0;
+        break;
+      //If key is D start countdown.
+      case 'D'  :
+        action  = "start_countdown";
+        lcd.noBlink();
+        break;
+      default :
+        if (action == "set_time") {
+          j++;
+          int c = j - 1;
+          timein[c] = key - 48;
+          initialsecond = 0;
+          long hour = (timein[0] * 10) + timein[1];
+          long minute = (timein[2] * 10) + timein[3];
+          long second = (timein[4] * 10) + timein[5]; //second
+          countdown_time = (hour * 3600) + (minute * 60) + second;
+          lcd.print(key);
+          if (j % 2 == 0 && j < 6) {
+            lcd.print(":");
+          }
+          break;
+        }
     }
-    lcd.print(countdown_hour);
-    lcd.print(":");
-    if (countdown_minute < 10) {
-      lcd.print("0");
-    }
-    lcd.print(countdown_minute);
-    lcd.print(":");
-    if (countdown_sec < 10) {
-      lcd.print("0");
-    }
-    lcd.print(countdown_sec);
   }
-  delay(500);
+  if (action  == "start_countdown") {
+    if (initialsecond == 0) {
+      initialsecond = millis() / 1000;
+    }
+    long countdowntime_seconds = countdown_time - (millis() / 1000) + initialsecond;
+    if (countdowntime_seconds >= 0) {
+      long countdown_hour = countdowntime_seconds / 3600;
+      long countdown_minute = ((countdowntime_seconds / 60) % 60);
+      long countdown_sec = countdowntime_seconds % 60;
+      lcd.setCursor(4, 1);
+      if (countdown_hour < 10) {
+        lcd.print("0");
+      }
+      lcd.print(countdown_hour);
+      lcd.print(":");
+      if (countdown_minute < 10) {
+        lcd.print("0");
+      }
+      lcd.print(countdown_minute);
+      lcd.print(":");
+      if (countdown_sec < 10) {
+        lcd.print("0");
+      }
+      lcd.print(countdown_sec);
+    }
+    delay(500);
+  }
 
 }//end timer
 
@@ -413,20 +454,7 @@ int defuse(){
   if (currentLength == 4){
     
     if (entered[0] == password[0] && entered[1] == password[1] && entered[2] == password[2] && entered[3] == password[3]){
-    
-      lcd.noCursor();
-      lcd.clear();
-      lcd.home();
-      lcd.setCursor (0,0);
-      lcd.print("The bomb has");
-      lcd.setCursor (0,1);
-      lcd.print("been defused.");
 
-      currentLength = 0;
-      delay(2500);
-      lcd.setCursor(0,1);
-      lcd.print("");
-      delay(10000);
       state = 0;
     
     }//end if
