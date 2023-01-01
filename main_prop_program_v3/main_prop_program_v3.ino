@@ -401,6 +401,30 @@ int timer(){
         lcd.print("0");
       }
       lcd.print(countdown_sec);
+      //TEMPORARY WORKAROUND FOR SOUND
+      if (countdown_minute <=59 && countdown_minute>=1){
+        trigger_buzzer(200);
+      }
+      if (countdown_minute == 0 && (countdown_sec <=59 && countdown_sec>=30)){
+        trigger_buzzer(100);
+      }
+      if (countdown_minute == 0 && (countdown_sec <=29 && countdown_sec>=10)){
+        trigger_buzzer(100);
+        delay(100);
+        trigger_buzzer(100);
+      }
+      if (countdown_minute == 0 && (countdown_sec <=9 && countdown_sec>=1)){
+        trigger_buzzer(100);
+        delay(50);
+        trigger_buzzer(100);
+        delay(50);
+        trigger_buzzer(100);
+
+      }
+      //TEMPORARY WORKAROUND UNTIL I FIGURE OUT THE FSM APPROACH FOR THIS STATE
+      if (countdown_hour == 0 && countdown_minute == 0 && countdown_sec == 0){
+      print_explosion_msg();
+      }
     }
     delay(500);
   }
@@ -453,7 +477,7 @@ int defuse(){
     
     if (entered[0] == password[0] && entered[1] == password[1] && entered[2] == password[2] && entered[3] == password[3]){
 
-      state = 0;
+      state = 5;
     
     }//end if
     
