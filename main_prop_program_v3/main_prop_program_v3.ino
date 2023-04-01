@@ -433,7 +433,7 @@ int timer(){
 
 int defuse(){
 
-  timer();
+  //timer();
   char currentKey = customKeypad.getKey(); // get the key
     
   if (currentKey == '*'){
@@ -444,7 +444,7 @@ int defuse(){
         
     while (currentLength < 4){
         
-      timer();
+      //timer();
       char currentKey = customKeypad.getKey();
 
       if (currentKey == '#'){
